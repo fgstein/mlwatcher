@@ -37,6 +37,7 @@ shows your runs at a glance. Built with Flutter.
 | Epoch metric | `epoch` | metric holding the current epoch |
 | Total epochs parameter | `epochs` | parameter holding the number of epochs (no bar when missing) |
 | Orange after | 30 min | a running run with no new metric for this long is shown orange |
+| Check every | 10 s | time between two polling rounds (2 s to 1 h) |
 | Opacity, always on top | 90 %, on | |
 | Grow automatically with the runs | off | the overlay always shrinks to fit fewer runs; with this it also grows, up to the screen height |
 | Notifications | on | on failure/kill, on finish |
@@ -138,7 +139,7 @@ or option 2.
 
 ## Network
 
-The server is polled every **2 seconds**, one round at a time (a slow answer never piles up requests):
+The server is polled every **10 seconds** by default (*Check every* in the settings), one round at a time (a slow answer never piles up requests):
 
 - `runs/search` for running runs: MLflow has no way to request only some fields, so each running run comes back with
   all its params/metrics/tags, about **4–8 KB per running run** (measured on MLflow 3.16). mlwatcher keeps only the
@@ -146,7 +147,7 @@ The server is polled every **2 seconds**, one round at a time (a slow answer nev
 - `runs/search` for runs that started since the previous poll and are no longer running (almost always empty).
 - `runs/get` only when a shown run stops running; `experiments/search` once a minute.
 
-With 5 running runs that is roughly 20 KB/s.
+With 5 running runs that is roughly 4 KB/s at 10 s (20 KB/s at 2 s).
 
 ## Building
 

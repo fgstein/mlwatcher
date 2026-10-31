@@ -20,9 +20,10 @@ class WatcherService extends ChangeNotifier {
     required this.secrets,
     SecretStore? certPasswords,
     this.notifier,
-    this.pollInterval = const Duration(seconds: 2),
+    Duration? pollInterval,
     MlflowClient Function(MlflowConnection)? clientFactory,
   }) : certPasswords = certPasswords ?? SecretStore(secrets.dir, name: 'client-cert-password'),
+       _pollIntervalOverride = pollInterval,
        _clientFactory = clientFactory ?? MlflowClient.new;
 
   final JsonStore store;
@@ -32,7 +33,11 @@ class WatcherService extends ChangeNotifier {
   final SecretStore certPasswords;
 
   final Notifier? notifier;
-  final Duration pollInterval;
+
+  /// Fixed interval (tests); otherwise [Settings.pollSeconds].
+  final Duration? _pollIntervalOverride;
+
+  Duration get pollInterval => _pollIntervalOverride ?? Duration(seconds: _settings.pollSeconds);
   final MlflowClient Function(MlflowConnection) _clientFactory;
 
   Settings _settings = const Settings();
@@ -100,6 +105,7 @@ class WatcherService extends ChangeNotifier {
   Future<void> applySettings(Settings s, String secret, {String? certPassword}) async {
     certPassword ??= _certPassword;
     final reconnect = s.watchesDifferentlyThan(_settings) || secret != _secret || certPassword != _certPassword;
+    final newInterval = s.pollSeconds != _settings.pollSeconds;
     _settings = s;
     await store.saveSettings(s);
     if (secret != _secret) {
@@ -115,6 +121,8 @@ class WatcherService extends ChangeNotifier {
       _rebuildTracker(runs: t?.runs ?? const [], dismissed: t?.dismissed ?? const {});
       _error = null;
       _schedule(Duration.zero);
+    } else if (newInterval && !_polling) {
+      _schedule(pollInterval); // The pending round was planned with the old interval.
     }
     notifyListeners();
   }
@@ -228,7 +236,7 @@ class WatcherService extends ChangeNotifier {
     );
   }
 
-  /// Persists the shown runs only when they changed (not every 2 seconds).
+  /// Persists the shown runs only when they changed (not at every round).
   Future<void> _saveState() async {
     final t = _tracker;
     if (t == null) return;

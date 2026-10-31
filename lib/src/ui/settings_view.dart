@@ -36,6 +36,7 @@ class _SettingsViewState extends State<SettingsView> {
   late final _epochMetric = TextEditingController(text: _initial.epochMetric);
   late final _totalParam = TextEditingController(text: _initial.totalEpochsParam);
   late final _stale = TextEditingController(text: '${_initial.staleMinutes}');
+  late final _poll = TextEditingController(text: '${_initial.pollSeconds}');
   late AuthMode _auth = _initial.authMode;
   late bool _untrusted = _initial.allowUntrustedCertificate;
   late int _opacity = _initial.opacityPercent;
@@ -74,6 +75,7 @@ class _SettingsViewState extends State<SettingsView> {
       _epochMetric,
       _totalParam,
       _stale,
+      _poll,
     ]) {
       c.dispose();
     }
@@ -96,6 +98,10 @@ class _SettingsViewState extends State<SettingsView> {
       epochMetric: orDefault(_epochMetric, 'epoch'),
       totalEpochsParam: orDefault(_totalParam, 'epochs'),
       staleMinutes: (int.tryParse(_stale.text.trim()) ?? _initial.staleMinutes).clamp(1, 10000),
+      pollSeconds: (int.tryParse(_poll.text.trim()) ?? _initial.pollSeconds).clamp(
+        Settings.minPollSeconds,
+        Settings.maxPollSeconds,
+      ),
       opacityPercent: _opacity,
       alwaysOnTop: _onTop,
       autoGrowOverlay: _autoGrow,
@@ -270,11 +276,27 @@ class _SettingsViewState extends State<SettingsView> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _field(
-                  _stale,
-                  'Orange after (minutes)',
-                  helper: 'A running run with no new metric for this long',
-                  number: true,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _field(
+                        _stale,
+                        'Orange after (minutes)',
+                        helper: 'A running run with no new metric for this long',
+                        number: true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _field(
+                        _poll,
+                        'Check every (seconds)',
+                        helper: 'Time between two queries to the server',
+                        number: true,
+                      ),
+                    ),
+                  ],
                 ),
                 _section('Overlay'),
                 Row(

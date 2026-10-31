@@ -16,6 +16,7 @@ class Settings {
     this.epochMetric = 'epoch',
     this.totalEpochsParam = 'epochs',
     this.staleMinutes = 30,
+    this.pollSeconds = 10,
     this.opacityPercent = 90,
     this.alwaysOnTop = true,
     this.autoGrowOverlay = false,
@@ -46,6 +47,13 @@ class Settings {
   /// A running run with no new metric for this long is shown orange.
   final int staleMinutes;
 
+  /// Seconds between two polling rounds (from the end of one to the start of
+  /// the next).
+  final int pollSeconds;
+
+  static const minPollSeconds = 2;
+  static const maxPollSeconds = 3600;
+
   final int opacityPercent;
   final bool alwaysOnTop;
 
@@ -70,6 +78,7 @@ class Settings {
     String? epochMetric,
     String? totalEpochsParam,
     int? staleMinutes,
+    int? pollSeconds,
     int? opacityPercent,
     bool? alwaysOnTop,
     bool? autoGrowOverlay,
@@ -88,6 +97,7 @@ class Settings {
     epochMetric: epochMetric ?? this.epochMetric,
     totalEpochsParam: totalEpochsParam ?? this.totalEpochsParam,
     staleMinutes: staleMinutes ?? this.staleMinutes,
+    pollSeconds: pollSeconds ?? this.pollSeconds,
     opacityPercent: opacityPercent ?? this.opacityPercent,
     alwaysOnTop: alwaysOnTop ?? this.alwaysOnTop,
     autoGrowOverlay: autoGrowOverlay ?? this.autoGrowOverlay,
@@ -120,6 +130,7 @@ class Settings {
     'epochMetric': epochMetric,
     'totalEpochsParam': totalEpochsParam,
     'staleMinutes': staleMinutes,
+    'pollSeconds': pollSeconds,
     'opacityPercent': opacityPercent,
     'alwaysOnTop': alwaysOnTop,
     'autoGrowOverlay': autoGrowOverlay,
@@ -155,6 +166,7 @@ class Settings {
       epochMetric: read('epochMetric', d.epochMetric),
       totalEpochsParam: read('totalEpochsParam', d.totalEpochsParam),
       staleMinutes: read<num>('staleMinutes', d.staleMinutes).toInt().clamp(1, 10000),
+      pollSeconds: read<num>('pollSeconds', d.pollSeconds).toInt().clamp(minPollSeconds, maxPollSeconds),
       opacityPercent: read<num>('opacityPercent', d.opacityPercent).toInt().clamp(20, 100),
       alwaysOnTop: read('alwaysOnTop', d.alwaysOnTop),
       autoGrowOverlay: read('autoGrowOverlay', d.autoGrowOverlay),

@@ -166,6 +166,7 @@ void main() {
       experimentNames: ['a', 'b'],
       clientCertificatePath: '/home/me/me.p12',
       staleMinutes: 12,
+      pollSeconds: 30,
       opacityPercent: 70,
       alwaysOnTop: false,
       autoGrowOverlay: true,
@@ -173,8 +174,14 @@ void main() {
     );
     final back = Settings.fromJson(jsonDecode(jsonEncode(s.toJson())) as Map<String, Object?>);
     expect(back.toJson(), s.toJson());
-    final garbage = Settings.fromJson({'authMode': 'zzz', 'opacityPercent': 5, 'experimentNames': 'x'});
-    expect((garbage.authMode, garbage.opacityPercent), (AuthMode.none, 20));
+    final garbage = Settings.fromJson({
+      'authMode': 'zzz',
+      'opacityPercent': 5,
+      'experimentNames': 'x',
+      'pollSeconds': 0,
+    });
+    expect((garbage.authMode, garbage.opacityPercent, garbage.pollSeconds), (AuthMode.none, 20, 2));
+    expect(Settings.fromJson({}).pollSeconds, 10);
     expect(garbage.experimentNames, isEmpty);
   });
 
